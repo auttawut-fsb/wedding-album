@@ -1,10 +1,10 @@
 import { groupPhotos } from './gallery-core.mjs';
-import { initFaceSearch } from './face-search.js';
+import { initFaceSearch } from './face-search.js?v=thai-1';
 const $ = id => document.getElementById(id);
 let photos = [], groups = [], visible = [], activeGroup = 'all', matches = null;
 let playlist = [], current = 0, playing = false, timer = null, imageSettled = false;
 const viewer = $('viewer'), image = $('viewer-image');
-const humanDate = stamp => new Intl.DateTimeFormat('en', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${stamp.slice(0, 10)}T12:00:00Z`));
+const humanDate = stamp => new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${stamp.slice(0, 10)}T12:00:00Z`));
 const cameraTime = stamp => stamp.slice(11, 19);
 
 function render() {
@@ -15,18 +15,18 @@ function render() {
   const selectedGroups = activeGroup === 'all' ? groups : groups.filter(g => g.id === activeGroup);
   const byId = new Map(photos.map(p => [p.id, p]));
   visible = matches === null ? selectedGroups.flatMap(g => g.photos) : matches.map(m => byId.get(m.id)).filter(Boolean);
-  $('album-summary').textContent = matches === null ? `${visible.length} photographs · ${humanDate(photos[0].capturedAt)} · in time order` : `${visible.length} suggested ${visible.length === 1 ? 'match' : 'matches'} · closest first`;
+  $('album-summary').textContent = matches === null ? `${visible.length} รูป · ${humanDate(photos[0].capturedAt)} · เรียงตามเวลาถ่าย` : `พบ ${visible.length} รูปที่อาจมีคุณอยู่ · เรียงตามความคล้ายของใบหน้า`;
   $('slideshow-button').disabled = visible.length === 0;
   $('album-empty').hidden = matches === null || visible.length > 0;
   const fragment = document.createDocumentFragment();
   const addPhoto = photo => {
     const button = document.createElement('button');
     button.className = 'photo';
-    button.setAttribute('aria-label', `Open photo ${photo.id}, taken at ${cameraTime(photo.capturedAt)}`);
+    button.setAttribute('aria-label', `ดูรูป ${photo.id} ถ่ายเวลา ${cameraTime(photo.capturedAt)} นาฬิกา`);
     const frame = document.createElement('div'); frame.className = 'photo-image';
     const img = document.createElement('img');
     img.src = photo.thumbnail; img.loading = 'lazy'; img.decoding = 'async';
-    img.alt = `Wedding photograph ${photo.id}`; img.width = photo.width; img.height = photo.height;
+    img.alt = `รูปงานแต่งงาน ${photo.id}`; img.width = photo.width; img.height = photo.height;
     img.style.setProperty('--ratio', `${photo.width}/${photo.height}`);
     frame.append(img);
     const caption = document.createElement('span'); caption.className = 'photo-caption';
@@ -39,7 +39,7 @@ function render() {
   else for (const group of selectedGroups) {
     const heading = document.createElement('div'); heading.className = 'group-heading';
     const title = document.createElement('h3'); title.textContent = group.label;
-    const count = document.createElement('span'); count.textContent = `${group.photos.length} photographs`;
+    const count = document.createElement('span'); count.textContent = `${group.photos.length} รูป`;
     heading.append(title, count); fragment.append(heading); group.photos.forEach(addPhoto);
   }
   gallery.append(fragment);
@@ -52,7 +52,7 @@ function scheduleSlide() {
 }
 function setPlaying(value) {
   playing = value && playlist.length > 1;
-  $('toggle-play').textContent = playing ? 'Pause slideshow' : 'Play slideshow';
+  $('toggle-play').textContent = playing ? 'หยุดรูปอัตโนมัติ' : 'ดูรูปอัตโนมัติ';
   $('toggle-play').setAttribute('aria-pressed', String(playing));
   if (playing) scheduleSlide(); else clearTimeout(timer);
 }
@@ -65,9 +65,9 @@ function showPhoto(position) {
   imageSettled = false;
   image.onload = () => { imageSettled = true; scheduleSlide(); };
   image.onerror = () => { imageSettled = true; $('viewer-image-error').hidden = false; scheduleSlide(); };
-  image.src = photo.src; image.alt = `Wedding photograph ${photo.id}, taken at ${cameraTime(photo.capturedAt)}`;
+  image.src = photo.src; image.alt = `รูปงานแต่งงาน ${photo.id} ถ่ายเวลา ${cameraTime(photo.capturedAt)} นาฬิกา`;
   $('viewer-caption').textContent = `${humanDate(photo.capturedAt)} · ${cameraTime(photo.capturedAt)} · ${photo.id}`;
-  $('viewer-position').textContent = `${current + 1} / ${playlist.length}`;
+  $('viewer-position').textContent = `รูปที่ ${current + 1} จาก ${playlist.length}`;
   $('download-photo').href = photo.src; $('download-photo').download = `${photo.id}.jpg`;
   $('previous-photo').disabled = $('next-photo').disabled = $('toggle-play').disabled = playlist.length <= 1;
   if (image.complete && image.naturalWidth) { imageSettled = true; scheduleSlide(); }
@@ -105,10 +105,10 @@ try {
   if (!response.ok) throw new Error('Album request failed');
   const album = await response.json(); photos = album.photos; groups = groupPhotos(photos);
   if (!photos.length) throw new Error('Album contains no photographs');
-  const all = { id: 'all', label: 'All photos' };
+  const all = { id: 'all', label: 'รูปทั้งหมด' };
   for (const group of [all, ...groups]) {
     const button = document.createElement('button');
-    button.textContent = group.label; button.dataset.group = group.id;
+    button.textContent = group.id === 'all' ? group.label : `${group.label} น.`; button.dataset.group = group.id;
     button.addEventListener('click', () => { activeGroup = group.id; render(); });
     $('album-nav').append(button);
   }
@@ -116,7 +116,7 @@ try {
   initFaceSearch(found => { matches = found; activeGroup = 'all'; render(); });
 } catch (error) {
   $('album-error').hidden = false;
-  $('album-summary').textContent = 'The photo list is unavailable.';
-  $('search-status').textContent = 'Selfie search will be available once the album loads.';
+  $('album-summary').textContent = 'โหลดรายการรูปไม่ได้ กรุณาลองเปิดอัลบั้มอีกครั้ง';
+  $('search-status').textContent = 'กรุณารอให้อัลบั้มเปิดเสร็จ แล้วจึงค้นหารูป';
   console.error('Album load failed:', error);
 }

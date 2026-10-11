@@ -7,7 +7,7 @@ export async function loadFaceEngine() {
         const script = document.createElement('script');
         script.src = new URL('./vendor/face-api.min.js', import.meta.url).href;
         script.onload = resolve;
-        script.onerror = () => { script.remove(); reject(new Error('The face-matching library could not load. Reload the page and try again.')); };
+        script.onerror = () => { script.remove(); reject(new Error('โหลดระบบค้นหาไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วเปิดหน้าเว็บอีกครั้ง')); };
         document.head.append(script);
       });
     }

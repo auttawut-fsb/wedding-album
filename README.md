@@ -76,3 +76,7 @@ recorded, without assuming a timezone. JPEG EXIF metadata, including GPS, is omi
 - `dependency-sources.json`: pinned download URLs and SHA-256 checksums.
 
 No analytics or external runtime services are included.
+
+## ภาษาไทยและการใช้งานที่อ่านง่าย
+
+หน้าเว็บใช้ภาษาไทยและวันที่แบบ พ.ศ. ตัวอักษรหลัก 20px ปุ่มหลักสูงอย่างน้อย 56px และเมนูช่วงเวลาขึ้นบรรทัดใหม่ได้ มีคำกำกับปุ่มก่อนหน้า ถัดไป ปิดรูป และบันทึกรูป การค้นหาใบหน้ามีคำแนะนำ 3 ขั้นตอนและปุ่มดูผลค้นหาโดยตรง รูปใบหน้าของผู้ใช้ยังประมวลผลในเครื่องเท่านั้น

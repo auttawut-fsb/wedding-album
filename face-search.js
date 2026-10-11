@@ -1,4 +1,4 @@
-import { describeFaces, loadFaceEngine } from './face-engine.js';
+import { describeFaces, loadFaceEngine } from './face-engine.js?v=thai-1';
 import { findMatches } from './gallery-core.mjs';
 const $ = id => document.getElementById(id);
 
@@ -22,33 +22,33 @@ export function initFaceSearch(onMatches) {
   }
   function clearSearch() {
     searchEpoch++; query = null; busy = false; stopCamera(); clearPreview();
-    input.value = ''; $('match-options').hidden = true;
-    say('Selfie cleared. You’re viewing the full album.'); onMatches(null); controls();
+    input.value = ''; $('match-options').hidden = true; $('view-results').hidden = true;
+    say('ล้างรูปใบหน้าแล้ว ตอนนี้คุณกำลังดูรูปทั้งหมด'); onMatches(null); controls();
   }
   async function loadIndex() {
     if (index) return index;
     const response = await fetch(new URL('./face-index.json', import.meta.url));
-    if (!response.ok) throw new Error('The album’s face index could not load. Reload the page and try again.');
+    if (!response.ok) throw new Error('โหลดข้อมูลค้นหาไม่ได้ กรุณาเปิดหน้าเว็บอีกครั้งแล้วลองใหม่');
     const value = await response.json();
-    if (!Array.isArray(value.photos) || value.photos.length === 0) throw new Error('The album’s face index is unavailable. Please try again later.');
+    if (!Array.isArray(value.photos) || value.photos.length === 0) throw new Error('ยังไม่มีข้อมูลสำหรับค้นหารูป กรุณาลองใหม่ภายหลัง');
     index = value; return index;
   }
   function match() {
     if (!query || !index) return;
     const threshold = Number($('match-range').value);
-    $('range-label').textContent = threshold < 0.5 ? 'Closer' : threshold > 0.6 ? 'Wider' : 'Balanced';
+    $('range-label').textContent = threshold < 0.5 ? 'คล้ายมาก' : threshold > 0.6 ? 'ค้นหารูปเพิ่ม' : 'ปกติ';
     const found = findMatches(query, index, threshold);
-    onMatches(found);
-    say(found.length ? `Found ${found.length} suggested ${found.length === 1 ? 'match' : 'matches'}. Scroll down to see them.` : 'No close matches. Try another selfie or widen the match range.');
+    onMatches(found); $('view-results').hidden = found.length === 0; $('view-results').textContent = `ดูรูปที่ค้นพบ (${found.length} รูป)`;
+    say(found.length ? `พบ ${found.length} รูปที่อาจมีคุณอยู่ กดปุ่มดูรูปที่ค้นพบด้านล่าง` : 'ยังไม่พบรูปที่คล้ายคุณ ลองเปลี่ยนรูปใบหน้า หรือเลื่อนแถบไปทางขวาเพื่อค้นหารูปเพิ่ม');
   }
   async function search(blob) {
     if (!consent.checked || busy) return;
-    if (blob.size > 20 * 1024 * 1024) { say('That photo is over 20 MB. Choose a smaller JPEG or PNG.', true); return; }
+    if (blob.size > 20 * 1024 * 1024) { say('รูปนี้มีขนาดเกิน 20 เมกะไบต์ กรุณาเลือกรูป JPEG หรือ PNG ที่เล็กลง', true); return; }
     const epoch = ++searchEpoch; busy = true; controls();
-    query = null; $('match-options').hidden = true; onMatches(null);
+    query = null; $('match-options').hidden = true; $('view-results').hidden = true; onMatches(null);
     clearPreview();
     previewURL = URL.createObjectURL(blob); $('selfie-preview').src = previewURL; $('selfie-preview').hidden = false;
-    say('Loading face matching on your device. The first search may take a moment…');
+    say('กำลังเตรียมค้นหารูปในเครื่องของคุณ ครั้งแรกอาจใช้เวลาสักครู่ กรุณารอ…');
     let bitmap;
     try {
       const [, faceIndex] = await Promise.all([loadFaceEngine(), loadIndex()]);
@@ -58,15 +58,15 @@ export function initFaceSearch(onMatches) {
       const ratio = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
       canvas.width = Math.max(1, Math.round(bitmap.width * ratio)); canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
       canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close(); bitmap = null;
-      say('Looking for your face…');
+      say('กำลังค้นหารูปที่มีใบหน้าคล้ายคุณ กรุณารอ…');
       const faces = await describeFaces(canvas);
       if (epoch !== searchEpoch) return;
-      if (faces.length === 0) throw new Error('No clear face found. Try a front-facing selfie in good light.');
-      if (faces.length > 1) throw new Error('More than one face found. Choose a photo with only you in it.');
+      if (faces.length === 0) throw new Error('มองไม่เห็นใบหน้าชัดเจน กรุณาเลือกรูปหน้าตรงที่มีแสงเพียงพอ');
+      if (faces.length > 1) throw new Error('พบหลายใบหน้า กรุณาเลือกรูปที่มีคุณเพียงคนเดียว');
       query = Array.from(faces[0].descriptor); index = faceIndex;
       $('match-options').hidden = false; match();
     } catch (error) {
-      if (epoch === searchEpoch) say(error.message?.includes('face') || error.message?.includes('index') || error.message?.includes('load') ? error.message : 'This photo couldn’t be read. Try a JPEG or PNG selfie.', true);
+      if (epoch === searchEpoch) say(/[ก-๙]/.test(error.message || '') ? error.message : 'ค้นหารูปไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต หรือเลือกรูปใบหน้าแบบ JPEG หรือ PNG แล้วลองอีกครั้ง', true);
     } finally {
       bitmap?.close();
       if (epoch === searchEpoch) { busy = false; controls(); }
@@ -75,7 +75,7 @@ export function initFaceSearch(onMatches) {
   $('upload-button').addEventListener('click', () => input.click());
   input.addEventListener('change', () => { const file = input.files[0]; input.value = ''; if (file) search(file); });
   consent.addEventListener('change', () => {
-    if (!consent.checked) { clearSearch(); say('Enable the checkbox to use selfie search.'); }
+    if (!consent.checked) { clearSearch(); say('กดช่องยินยอมด้านบนก่อน แล้วจึงเลือกรูปหรือเปิดกล้อง'); }
     controls();
   });
   $('match-range').addEventListener('input', match);
@@ -83,18 +83,18 @@ export function initFaceSearch(onMatches) {
   $('empty-reset').addEventListener('click', clearSearch);
   $('camera-button').addEventListener('click', async () => {
     if (!consent.checked || busy) return;
-    if (!navigator.mediaDevices?.getUserMedia) { say('Camera access isn’t available here. Choose a selfie instead, or open this site over HTTPS.', true); return; }
+    if (!navigator.mediaDevices?.getUserMedia) { say('เครื่องนี้เปิดกล้องไม่ได้ กรุณากดเลือกรูปจากเครื่องแทน', true); return; }
     stopCamera(); const epoch = ++cameraEpoch;
-    camera.hidden = false; $('capture-button').disabled = true; controls(); say('Allow camera access to take your selfie.');
+    camera.hidden = false; $('capture-button').disabled = true; controls(); say('หากเครื่องถาม กรุณากดอนุญาตให้ใช้กล้องเพื่อถ่ายรูปของคุณ');
     try {
       const received = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
       if (epoch !== cameraEpoch || !consent.checked) { received.getTracks().forEach(track => track.stop()); return; }
       stream = received; video.srcObject = stream; await video.play();
       if (epoch !== cameraEpoch) return;
-      $('capture-button').disabled = false; say('Keep just your face in the frame, then capture your selfie.');
+      $('capture-button').disabled = false; say('ให้เห็นเฉพาะใบหน้าของคุณ แล้วกดถ่ายรูปและค้นหา');
     } catch (error) {
       if (epoch !== cameraEpoch) return;
-      stopCamera(); say(error.name === 'NotAllowedError' ? 'Camera permission was denied. You can choose a selfie instead.' : 'The camera couldn’t open. Choose a selfie instead.', true);
+      stopCamera(); say(error.name === 'NotAllowedError' ? 'ยังไม่ได้รับอนุญาตให้ใช้กล้อง กรุณากดเลือกรูปจากเครื่องแทน' : 'เปิดกล้องไม่ได้ กรุณากดเลือกรูปจากเครื่องแทน', true);
     }
   });
   $('capture-button').addEventListener('click', async () => {
@@ -106,10 +106,11 @@ export function initFaceSearch(onMatches) {
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
     if (epoch !== cameraEpoch) return;
     stopCamera();
-    if (blob) search(blob); else say('The selfie couldn’t be captured. Choose a photo instead.', true);
+    if (blob) search(blob); else say('ถ่ายรูปไม่ได้ กรุณากดเลือกรูปจากเครื่องแทน', true);
   });
-  $('cancel-camera').addEventListener('click', () => { stopCamera(); say('Camera closed. You can choose a selfie instead.'); });
+  $('cancel-camera').addEventListener('click', () => { stopCamera(); say('ปิดกล้องแล้ว คุณสามารถกดเลือกรูปจากเครื่องได้'); });
   window.addEventListener('pagehide', clearSearch);
   document.addEventListener('visibilitychange', () => { if (document.hidden && !camera.hidden) stopCamera(); });
+  say('เริ่มค้นหาได้โดยกดช่องยินยอมด้านบน');
   controls();
 }
