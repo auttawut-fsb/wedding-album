@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f6f2">
+  <meta name="description" content="Our wedding photo album. Relive the day, enjoy a slideshow, and find the moments you were part of.">
+  <title>Our wedding · 25 November 2023</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#photos">Skip to photos</a>
+  <header class="site-header wrap">
+    <a class="brand" href="#">Our wedding<span class="brand-dot" aria-hidden="true">.</span></a>
+    <nav aria-label="Main navigation"><a href="#photos">The album</a><a href="#find-me">Find my photos <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></svg></a></nav>
+  </header>
+  <main>
+    <section class="intro wrap" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <h1 id="intro-title">A day to <br>remember.</h1>
+        <p class="date">25 November 2023</p>
+        <p class="intro-note">The smiles, the little moments, <br>and everyone who made it ours.</p>
+        <a class="text-link" href="#photos">Open the album <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></a>
+      </div>
+      <figure class="cover"><img src="photos/DSC01057.jpg" alt="The wedding couple together at their reception" width="1616" height="1080" fetchpriority="high"><figcaption>A little of our day, shared with you.</figcaption></figure>
+    </section>
+    <section id="find-me" class="find-section wrap" aria-labelledby="find-title">
+      <div class="find-copy"><h2 id="find-title">You were part of it.</h2><p>Take a selfie or choose a photo of yourself. <br>We’ll find the moments you might be in.</p><p class="privacy-note">Your selfie stays on your device. Matches are suggestions.</p></div>
+      <div class="find-controls">
+        <label class="consent"><input id="search-consent" type="checkbox"> I agree to use my selfie for face matching on this device.</label>
+        <div class="search-buttons">
+          <button id="upload-button" class="button primary" disabled><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 16V4m-4 4 4-4 4 4M4 15v5h16v-5"/></svg>Choose a selfie</button>
+          <button id="camera-button" class="button" disabled><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h4l2-3h4l2 3h4v13H4Z"/><circle cx="12" cy="13" r="4"/></svg>Take a selfie</button>
+          <input id="selfie-input" type="file" accept="image/*" hidden>
+        </div>
+        <p class="search-hint">Use a clear photo with just your face.</p>
+        <div id="camera-panel" class="camera-panel" hidden><video id="camera-video" autoplay playsinline muted aria-label="Selfie camera preview"></video><div class="camera-actions"><button id="capture-button" class="button primary">Capture selfie</button><button id="cancel-camera" class="button">Cancel</button></div></div>
+        <div class="search-feedback"><img id="selfie-preview" alt="Your selected selfie" hidden><p id="search-status" role="status" aria-live="polite"></p></div>
+        <div id="match-options" class="match-options" hidden><label for="match-range">Match range <span id="range-label">Balanced</span></label><input id="match-range" type="range" min="0.4" max="0.7" step="0.025" value="0.55"><p>Slide right for more possible matches. Faces in masks or poor light may be missed.</p><button id="clear-search" class="text-link">Clear selfie &amp; show all photos</button></div>
+      </div>
+    </section>
+    <section id="photos" class="album-section wrap" aria-labelledby="album-title">
+      <div class="album-heading"><div><h2 id="album-title">The evening, unfolding.</h2><p id="album-summary" role="status">Opening the album…</p></div><button id="slideshow-button" class="button primary" disabled><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z"/></svg>Play slideshow</button></div>
+      <nav id="album-nav" class="album-nav" aria-label="Albums by capture time"></nav>
+      <div id="results-heading" class="results-heading" hidden><h3>Moments you might be in</h3><p>Closest matches first. Check each photo before sharing.</p></div>
+      <div id="gallery" class="gallery" aria-live="off"></div>
+      <div id="album-empty" class="empty-state" hidden><h3>No close matches this time.</h3><p>Try a clearer selfie or widen the match range.</p><button id="empty-reset" class="button">Show all photos</button></div>
+      <div id="album-error" class="empty-state" hidden><h3>The album couldn’t open.</h3><p>Check your connection and reload the page.</p><button class="button" onclick="location.reload()">Reload album</button></div>
+    </section>
+  </main>
+  <footer class="wrap"><p>Thank you for being part of our day.</p><a href="#">Back to the beginning <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20V4m-6 6 6-6 6 6"/></svg></a></footer>
+  <dialog id="viewer" aria-label="Wedding photo viewer">
+    <div class="viewer-top"><p id="viewer-caption"></p><button id="close-viewer" class="icon-button" aria-label="Close photo viewer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+    <div class="viewer-stage"><button id="previous-photo" class="icon-button" aria-label="Previous photo"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><div class="viewer-image-wrap"><img id="viewer-image" alt=""><p id="viewer-image-error" role="status" hidden>This photo couldn’t load. Try the next photo.</p></div><button id="next-photo" class="icon-button" aria-label="Next photo"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div>
+    <div class="viewer-bottom"><span id="viewer-position"></span><div class="viewer-playback"><button id="toggle-play" class="button viewer-button">Play slideshow</button><label>Every <select id="slide-speed" aria-label="Slideshow interval"><option value="3000">3 seconds</option><option value="5000" selected>5 seconds</option><option value="8000">8 seconds</option></select></label></div><a id="download-photo" class="button viewer-button" download>Download photo</a></div>
+  </dialog>
+  <noscript><p class="wrap">Enable JavaScript to browse the album, play the slideshow, and use selfie search.</p></noscript>
+</body>
+</html>
